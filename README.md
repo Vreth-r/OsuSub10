@@ -5,6 +5,8 @@ This was a challenge project to code a clone of Osu! in under 10 hours. The offi
 
 The project includes 3 (poorly made) beatmaps to play, the unbuilt unity project contains a beatmap editor that can be used to make custom beatmaps.
 
+The code is messy and far from my best work but this is essentially a test of my immediate dev knowledge that I can pull out of my brain quickly plus a display of how fast I can work and still have something out thats playable.
+
 
 ## Authors
 
@@ -13,7 +15,7 @@ The project includes 3 (poorly made) beatmaps to play, the unbuilt unity project
 
 ## Related
 
-Please checkout the original game:
+Please checkout the original inspiration game:
 
 [Osu!](https://osu.ppy.sh/)
 
