@@ -30,3 +30,12 @@ Please checkout the original inspiration game:
 - Encoded json beatmap format
 - Fully navigatable
 
+## Improvments I Might Make in the Future But Didn't Have Time For In V1
+
+- Use actual animations and custom sprites for hit objects instead of manually scaling and animating with code
+- Better hit detection than simple raycasts
+- More audio elements
+- Roundable sliders
+- Circle groups and direction indicator lines
+- More beatmaps!
+- Official in-game beatmap editor
