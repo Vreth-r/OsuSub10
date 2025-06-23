@@ -1,0 +1,139 @@
+using UnityEngine;
+
+public class HitCircle : MonoBehaviour
+{
+    public float hitTime; // time in seconds since music started when the note will spawn
+    public float approachDuration = 1f;
+    public float perfectWindow = 0.05f;
+    public float goodWindow = 1.0f;
+
+    private bool hasBeenHit = false;
+    public GameObject approachCircle;
+    private SpriteRenderer spriteRenderer;
+    private float fade = 0f;
+    private float fadeSpeed = 2f;
+    private bool isFadingOut = false;
+
+    private Vector3 originalScale;
+    private Vector3 targetScale;
+    private float scaleSpeed = 5f;
+    private bool isScalingUp = false;
+
+    void Start()
+    {
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        Color c = spriteRenderer.color;
+        c.a = 0f; // start transparent
+        spriteRenderer.color = c;
+
+        originalScale = transform.localScale;
+    }
+
+    void Update()
+    {
+        float musicTime = Time.time - GameManager.Instance.startTime; // the time of the music related to the time it started
+        float deltaTime = hitTime - musicTime; // the difference between what the current music time is vs the time the hitcircle is supposed to spawn
+
+        // fade in during approach
+        if (!isFadingOut && deltaTime > 0f)
+        {
+            float t = 1f - Mathf.Clamp01(deltaTime / approachDuration);
+            fade = Mathf.Lerp(0f, 1f, t);
+            SetAlpha(fade);
+        }
+        /*
+        // Debug, shows hit windows (will override fading)
+        if (deltaTime <= perfectWindow)
+        {
+            spriteRenderer.color = new Color(0f, 1f, 0f);
+        }
+        else if (deltaTime <= goodWindow)
+        {
+            spriteRenderer.color = new Color(1f, 1f, 0f);
+        }
+        */
+        // Animate approach circle shrinking as time approaches hitTime
+        if (approachCircle && deltaTime > 0f)
+        {
+            float t = 1f - Mathf.Clamp01(deltaTime / approachDuration);
+            float scale = Mathf.Lerp(3f, 1f, t);
+            approachCircle.transform.localScale = Vector3.one * scale;
+        }
+
+        // if miss
+        if (!hasBeenHit && deltaTime < 0f)
+        {
+            hasBeenHit = true;
+            GetComponent<Collider2D>().enabled = false;
+            GameManager.Instance.RegisterHit(0);
+            GameManager.Instance.ShowHitFeedback(transform.position, "Miss!", Color.red);
+            StartFadeOut();
+        }
+
+        // Handle scale up
+        if (isScalingUp)
+        {
+            transform.localScale = Vector3.Lerp(transform.localScale, targetScale, scaleSpeed * Time.deltaTime);
+        }
+
+        // fade out if hit or missed
+        if (isFadingOut)
+        {
+            fade = Mathf.MoveTowards(fade, 0f, fadeSpeed * Time.deltaTime);
+            SetAlpha(fade);
+            if (fade <= 0f) Destroy(gameObject);
+        }
+    }
+
+    public void OnClicked()
+    {
+        if (hasBeenHit) return;
+
+        hasBeenHit = true;
+        GetComponent<Collider2D>().enabled = false;
+
+        float musicTime = Time.time - GameManager.Instance.startTime;
+        float delta = Mathf.Abs(hitTime - musicTime);
+
+        if (delta <= perfectWindow)
+        {
+            GameManager.Instance.RegisterHit(2);
+            GameManager.Instance.ShowHitFeedback(transform.position, "Perfect!", Color.yellow);
+            StartScaleUp();
+        }
+        else if (delta <= goodWindow)
+        {
+            GameManager.Instance.RegisterHit(1);
+            GameManager.Instance.ShowHitFeedback(transform.position, "Good!", Color.green);
+            StartScaleUp();
+        }
+        else
+        {
+            GameManager.Instance.RegisterHit(0);
+            GameManager.Instance.ShowHitFeedback(transform.position, "Miss!", Color.red);
+        }
+
+        StartFadeOut();
+    }
+
+    void StartFadeOut()
+    {
+        isFadingOut = true;
+    }
+
+    void StartScaleUp()
+    {
+        isScalingUp = true;
+        targetScale = originalScale * 1.3f; // pop up slightly
+    }
+
+    void SetAlpha(float a)
+    {
+        if (spriteRenderer)
+        {
+            Color c = spriteRenderer.color;
+            c.a = a;
+            spriteRenderer.color = c;
+        }
+    }
+}
